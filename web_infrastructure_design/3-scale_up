@@ -1,0 +1,103 @@
+# Distributed web infrastructure
+
+## Infrastructure Diagram
+
+```
+                         User
+                           |
+                         HTTPS
+                           |
+                           v
+                    www.foobar.com
+                           |
+                           v
+                     +-----------+
+                     | Firewall  |
+                     +-----+-----+
+                           |
+                  +--------+--------+
+                  |                 |
+                  v                 v
+          +-------------+   +-------------+
+          |  HAProxy 1  |===|  HAProxy 2  |
+          |Load Balancer|   |Load Balancer|
+          | SSL         |   |             |
+          | Monitoring  |   | Monitoring  |
+          +------+------+   +------+------+
+                 \                /
+                  \              /
+                   +------------+
+                        |
+                   Round Robin
+                        |
+                        v
+                 +-------------+
+                 |  Firewall   |
+                 +------+------+
+                        |
+                        v
+                 +-------------+
+                 | Web Server  |
+                 |-------------|
+                 | Nginx       |
+                 | Monitoring  |
+                 +------+------+
+                        |
+                        v
+                 +-------------+
+                 |  Firewall   |
+                 +------+------+
+                        |
+                        v
+                 +-------------+
+                 | App Server  |
+                 |-------------|
+                 | App Server  |
+                 | App Files   |
+                 | Monitoring  |
+                 +------+------+
+                        |
+                        v
+                 +-------------+
+                 |  Firewall   |
+                 +------+------+
+                        |
+                        v
+              +--------------------+
+              |   DB Server        |
+              |--------------------|
+              | MySQL Primary      |
+              | Monitoring         |
+              +---------+----------+
+                        |
+                   Replication
+                        |
+                        v
+              +--------------------+
+              |   DB Replica       |
+              |--------------------|
+              | MySQL Replica      |
+              | Monitoring         |
+              +--------------------+
+```
+
+## Additional elements
+
+### Second HAProxy server
+
+Added a second HAProxy server to remove HAProxy as a SPOF. It is configured as a cluster so that if one were to fail, the other can continue handling traffic.
+
+### Dedicated Web Server
+
+Nginx has its own server so web traffic can be handled independently. This allows the web layer to be scaled separately.
+
+### Dedicated Application Server
+
+This allows the application to have its own CPU and memory resources, so it does not have to compete with other components. This improves scalability.
+
+
+### Dedicated Database Server
+
+The database is separated to prevent it from competing with Nginx and the application for CPU, memory, and disk resources. This also makes the database easier to manage and scale independently.
+
+
