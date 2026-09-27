@@ -1,0 +1,56 @@
+# Simple web stack
+
+## Architecture
+
+```
+User
+  |
+  | HTTPS
+  v
+www.foobar.com
+  |
+  | DNS A record -> 8.8.8.8
+  v
++-------------------------+
+|         Server          |
+|                         |
+|  Nginx                  |
+|    |                    |
+|    v                    |
+|  Application Server     |
+|    |                    |
+|    +----> MySQL         |
+|    |                    |
+|    +----> Application  |
+|          Files          |
++-------------------------+
+```
+
+## User flow
+
+1. User enters `www.foobar.com` in their browser.
+2. The DNS translates the domain name into an IP `8.8.8.8`.
+3. The browser sends an HTTP/HTTPS request to the server.
+4. Nginx receives request
+5. Nginx forwards request to app server
+6. App server executes application code to query MYSQL database
+7. Response is then sent back to the browser through Nginx
+
+## Components
+
+- **Server:** A physical or virtual computer that hosts and runs the services.
+- **Domain name:** `foobar.com` is a user-friendly name used to access the website instead of using an IP address.
+- **DNS `www` record:** An A record that maps `www.foobar.com` to the server's IP address `8.8.8.8`.
+- **Web server (Nginx):** Receives HTTP/HTTPS requests from users and forwards dynamic requests to the application server.
+- **Application server:** Runs the application code and handles the application's logic.
+- **Application files:** The code base of the website that is executed by the application server.
+- **Database (MySQL):** Stores and retrieves the website's data.
+- **HTTP/HTTPS:** The protocols used for communication between the user's browser and the server.
+
+## Issues
+
+- **SPOF:** There is only one server. If it fails, the entire website becomes unavailable.
+
+- **Downtime during maintenance:** If the server or Nginx needs to be restarted during maintenance or deployment, the website may become temporarily unavailable.
+
+- **Cannot scale:** There is only one server, so if incoming traffic becomes too high, the server can become overloaded.
