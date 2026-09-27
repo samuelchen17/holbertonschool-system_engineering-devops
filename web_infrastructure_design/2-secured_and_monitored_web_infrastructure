@@ -1,0 +1,87 @@
+# Distributed web infrastructure
+
+## Infrastructure Diagram
+
+```
+                         User
+                           |
+                         HTTPS
+                           |
+                           v
+                    www.foobar.com
+                           |
+                           v
+                  +----------------+
+                  |    HAProxy     |
+                  | Load Balancer  |
+                  | SSL Certificate|
+                  +-------+--------+
+                          |
+                     Round Robin
+                     /         \
+                    v           v
+             +-----------+   +-----------+
+             | Firewall  |   | Firewall  |
+             +-----+-----+   +-----+-----+
+                   |               |
+                   v               v
+            +-------------+   +-------------+
+            |  Server 1   |   |  Server 2   |
+            |-------------|   |-------------|
+            | Nginx       |   | Nginx       |
+            | App Server  |   | App Server  |
+            | App Files   |   | App Files   |
+            | MySQL       |   | MySQL       |
+            | Monitoring  |   | Monitoring  |
+            +-------------+   +-------------+
+                   |               |
+             Firewall           Firewall
+                   \               /
+                    \             /
+                     +-----------+
+                          |
+                       MySQL
+                    Primary/Replica
+```
+
+## Additional elements vs Simple web stack
+
+- Load-balancer (HAproxy): distribute load (incoming traffic) between the two servers to prevent one server from handling everything
+- Additional server for redundancy and to handle more traffic, this allows the server to remain running even if one experiences and error or requires maintenance
+- MySQL Replica: Added to keep a copy of the DB on the second server, providing data redundancy
+
+## What distribution algorithm does the load balancer use?
+
+Round Robin -> HAProxy sends requests to the servers in turn, distributes requests relatively evenly between the two servers.
+
+## Active-Active or Active-Passive setup?
+
+This is a Active-Active set up where both servers actively handle incoming requests at the same time.
+
+### What is Active-Passive?
+
+This is where one server handles everything while the other is on standby as a back up, if the active server were to fail, the passive server will take over.
+
+## How does MySQL Primary-Replica (Master-Slave) work?
+
+The Primary database handles changes such as INSERT, UPDATE, and DELETE. These changes are then replicated to the Replica database, keeping a copy of the Primary's data.
+
+## Difference between Primary and Replica regarding the application
+
+The application sends write operations such as INSERT, UPDATE, and DELETE to the Primary database. The Replica receives replicated data from the Primary and can be used to handle read operations such as SELECT.
+
+## Issues
+
+SPOF:
+
+- HAProxy: If this goes down, users cannot reach Server 1 or 2
+- MySQL Primary: If this DB goes down, application cannot perform write operations. The Replica will need to be set up to take over if the Primary fails.
+
+Security Issues:
+
+- No Firewall: servers are not protected by a firewall which can allow attacks or unwanted network traffic to come in.
+- No HTTPS: Communication is not encrypted which can expose sensitive data during transmission.
+
+No Monitoring
+
+- There is no system to monitor and detect issues that may arise, would make it difficult to diagnose failures.

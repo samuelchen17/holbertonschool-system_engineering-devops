@@ -5,7 +5,7 @@
 ```
 User
   |
-  | HTTPS
+  | HTTP
   v
 www.foobar.com
   |
